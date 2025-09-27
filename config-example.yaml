@@ -1,0 +1,30 @@
+server:
+  host: "127.0.0.1" #本程序主机地址，一般不用改
+  port: 3939  #本程序的ws端口
+  suffix: "/ws" #ws的路径，如果没有修改过的话就是ws://127.0.0.1:3939/ws
+  bot-id: 00000000 #bot的账号，给下面的bot应用看的
+  user-agent: "OneBotFilter" #用户代理，只是一个标记，给下面的bot应用看的
+  debug: false  #debug模式，显示所有从onebot客户端发来的消息，一般为false
+whitelist:  #白名单模式
+  - name: "bot1"  #bot应用的名字，不要写一样的
+    uri: "ws://example.com/onebot/v11/ws" #bot应用的反向ws地址
+    access-token: #令牌，没有留空
+    filters: ["detail", "b\\d+", "查看 *[\\d.]{2,}", "信息"] #只有匹配成功的才能通过
+    prefix: "b1" #额外前缀，以这个前缀开头的一定通过，且会自动把前缀去掉
+  - name: "bot4"  #bot应用的名字，不要写一样的
+    uri: "ws://bot4.example.com/onebot/v11/ws" #bot应用的反向ws地址
+    access-token: #令牌，没有留空
+    filters: [] #空的白名单，阻止所有的消息
+    prefix:  #没有前缀，意味着没有强行通过的方式
+blacklist:  #黑名单模式
+  - name: "bot2"
+    uri: "ws://127.0.0.1:8080/ws"
+    access-token:
+    filters: [  ] #空的黑名单放行所有的消息
+    prefix: #没有前缀，意味着没有强行通过的方式
+  - name: "bot3"
+    uri: "wss://bot3.example.com/onebot/v11/ws"
+    access-token:
+    filters: ["help", "信息", "(?<!pj)sk","^\\d+$"] #黑名单，匹配的不会通过
+    prefix: "$"
+  
