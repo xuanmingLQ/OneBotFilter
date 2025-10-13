@@ -4,27 +4,39 @@ server:
   suffix: "/ws" #ws的路径，如果没有修改过的话就是ws://127.0.0.1:3939/ws
   bot-id: 00000000 #bot的账号，给下面的bot应用看的
   user-agent: "OneBotFilter" #用户代理，只是一个标记，给下面的bot应用看的
+  default: #默认的配置，当下面的bot应用配置为defualt时，使用此配置
+    private: #私聊
+      mode: "off" #mode只能设置为：on、off、whitelist或blacklist，设置为off禁止所有私聊或群聊，设置为on允许所有私聊或群聊
+      ids: [] #当mode设置为on或off时，忽略此项
+    group: #群聊
+      mode: "whitelist" #mode只能设置为：on、off、whitelist或blacklist，设置为whitelist或blacklist的，根据黑白名单阻止或允许消息
+      ids: [ 1111111111, 66666666 ] #当mode设置为whitelist或blackliist时，此项才有意义
+  sleep-time: 5 #当连接bot应用端失败时，等待多久之后重新连接
   debug: false  #debug模式，显示所有从onebot客户端发来的消息，一般为false
-whitelist:  #白名单模式
+bot-apps: #bot应用端配置
   - name: "bot1"  #bot应用的名字，不要写一样的
     uri: "ws://example.com/onebot/v11/ws" #bot应用的反向ws地址
     access-token: #令牌，没有留空
-    filters: ["detail", "b\\d+", "查看 *[\\d.]{2,}", "信息"] #只有匹配成功的才能通过，使用正则匹配
-    prefix: "b1" #额外前缀，以这个前缀开头的一定通过，且会自动把前缀去掉
-  # - name: "bot4"  #bot应用的名字，不要写一样的
-  #   uri: "ws://bot4.example.com/onebot/v11/ws" #bot应用的反向ws地址
-  #   access-token: #令牌，没有留空
-  #   filters: [] #空的白名单，阻止所有的消息
-  #   prefix:  #没有前缀，意味着没有强行通过的方式
-blacklist:  #黑名单模式
-  - name: "bot2"
-    uri: "ws://127.0.0.1:8080/ws"
-    access-token:
-    filters: [] #空的黑名单放行所有的消息
-    prefix: #没有前缀，意味着没有强行通过的方式
-  # - name: "bot3"
-  #   uri: "wss://bot3.example.com/onebot/v11/ws"
-  #   access-token:
-  #   filters: ["help", "信息", "(?<!pj)sk","^\\d+$"] #黑名单，匹配的不会通过，使用正则匹配
-  #   prefix: "$"
-  
+    # private: #不填写的项目默认为default，使用上面的deault配置
+    group: 
+      mode: "blackliist" #黑名单模式，阻止ids中群号的消息
+      ids: [ 222222222, 333333333 ]
+    message: #对允许的私聊、群聊或频道的消息进行过滤
+      mode: "blacklist" #只能是whitelist或blacklist，设置为blacklist时，禁止过滤器匹配成功的消息
+      filters: ["detail", "b\\d+", "查看 *[\\d.]{2,}", "信息"] #使用正则匹配
+      prefix: "b1" #额外前缀，以这个前缀开头的无视过滤器，且会自动把前缀去掉
+      prefix-replace: "/" #当此项不为空时，使用前缀通过的消息会将前缀改为这个
+  - name: "bot2"  #bot应用的名字，不要写一样的
+    uri: "wss://bot2.example.com/onebot/v11/ws" #bot应用的反向ws地址
+    # access-token: #留空的项目可以直接不写
+    private:
+      mode: "blacklist" #黑名单模式，阻止ids中的QQ号的私聊
+      ids: [ 2233445566 ]
+    group:
+      mode: "whitelist" #白名单模式，只允许ids中群号的消息
+      ids: [ 1145141919 ]
+    message:
+      mode: "whitelist" #只能是whitelist或blacklist，设置为whitelist时，只允许匹配成功的消息
+      filters: [ "help", "(?<=pj)sk", "pj(?=sk)" ] #使用正则匹配
+      prefix: "" #没有前缀，没有可以无视过滤器通过的方式
+      # prefix-replace: #留空的项目可以不写
