@@ -18,7 +18,6 @@ type WsClient struct {
 	filter    *Filter
 	readChan  chan WsMsg //从bot应用端读取到的消息
 	writeChan chan WsMsg //写入到bot应用端的消息
-	// mutex     sync.Mutex
 }
 
 // 连接到反向ws服务端，转发消息，并使用过滤器
@@ -76,11 +75,7 @@ func WsClientHandler(wss *WsServer, cfg BotAppsConfig) {
 				break
 			}
 			client.readChan <- WsMsg{mt, msg}
-			// if err := wss.WriteMessage(mt, msg); err != nil {
-			// 	log.Println("写入到OneBot客户端出错：", err)
-			// }
 		}
-		// conn.Close()
 		client.close(ctxCancel)
 	}
 }
@@ -89,26 +84,6 @@ func (wc *WsClient) WriteMessage(mt int, msg []byte) error {
 		return errors.New("没有连接到bot应用端")
 	}
 	wc.writeChan <- WsMsg{mt, msg}
-	//解析json格式的消息
-	// onebotMessage := make(map[string]interface{})
-	// err := json.Unmarshal(msg, &onebotMessage)
-	// if err != nil {
-	// 	log.Printf("解析OneBot消息出错：%v\n", err)
-	// 	continue
-	// }
-	// //通常的消息
-	// if rawMessage, ok := onebotMessage["raw_message"].(string); ok {
-	// 	if wc.filter.Filter(rawMessage, onebotMessage) {
-	// 		//过滤器通过，发送
-	// 		wc.conn.WriteJSON(onebotMessage)
-	// 	}
-	// 	continue
-	// }
-	// //其他消息直接放行
-	// err = wc.conn.WriteMessage(msg.MsgType, msg.MsgData)
-	// if err != nil {
-	// 	log.Printf("向%s发送消息出错：%v\n", wc.Name, err)
-	// }
 	return nil
 }
 func (wc *WsClient) close(ctxCancel context.CancelFunc) {

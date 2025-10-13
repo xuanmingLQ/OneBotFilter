@@ -9,14 +9,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// type YamlString string
-
-// // 实现 yaml.Unmarshaler 接口
-// func (s *YamlString) UnmarshalYAML(value *yaml.Node) error {
-// 	*s = YamlString(value.Value) // 无论是 int 还是 string，这里统一当字符串处理
-// 	return nil
-// }
-
 type Config struct {
 	Server  ServerConfig    `mapstructure:"server" yaml:"server"`
 	BotApps []BotAppsConfig `mapstructure:"bot-apps" yaml:"bot-apps"`
@@ -111,7 +103,7 @@ type MessageTypeConfig struct {
 type MessageConfig struct {
 	Mode          string   `mapstructure:"mode" yaml:"mode"` // whitelist or blacklist
 	Filters       []string `mapstructure:"filters" yaml:"filters"`
-	Prefix        string   `mapstructure:"prefix" yaml:"prefix"`
+	Prefix        []string `mapstructure:"prefix" yaml:"prefix"`
 	PrefixReplace string   `mapstructure:"prefix-replace" yaml:"prefix-replace"`
 }
 

@@ -24,7 +24,7 @@ bot-apps: #bot应用端配置
     message: #对允许的私聊、群聊或频道的消息进行过滤
       mode: "blacklist" #只能是whitelist或blacklist，设置为blacklist时，禁止过滤器匹配成功的消息
       filters: ["detail", "b\\d+", "查看 *[\\d.]{2,}", "信息"] #使用正则匹配
-      prefix: "b1" #额外前缀，以这个前缀开头的无视过滤器，且会自动把前缀去掉
+      prefix: ["b1","#"] #额外前缀，以这里的前缀开头的无视过滤器，且会自动把前缀去掉
       prefix-replace: "/" #当此项不为空时，使用前缀通过的消息会将前缀改为这个
   - name: "bot2"  #bot应用的名字，不要写一样的
     uri: "wss://bot2.example.com/onebot/v11/ws" #bot应用的反向ws地址
@@ -38,5 +38,5 @@ bot-apps: #bot应用端配置
     message:
       mode: "whitelist" #只能是whitelist或blacklist，设置为whitelist时，只允许匹配成功的消息
       filters: [ "help", "(?<=pj)sk", "pj(?=sk)" ] #使用正则匹配
-      prefix: "" #没有前缀，没有可以无视过滤器通过的方式
+      prefix: [] #没有前缀，没有可以无视过滤器通过的方式
       # prefix-replace: #留空的项目可以不写

@@ -18,7 +18,7 @@ type MessageFilter struct {
 	Mode          string           // whitelist or blacklist
 	Filters       []string         //正则表达式原始字符串
 	Regexps       []*regexp.Regexp //编译后的正则表达式
-	Prefix        string
+	Prefix        []string
 	PrefixReplace string
 }
 
@@ -159,14 +159,24 @@ func (f *MessageTypeFilter) Filter(id int64) bool {
 
 // 前缀通过功能
 func (f *MessageFilter) prefixPass(onebotMessage map[string]interface{}) bool {
-	if f.Prefix == "" {
+	if len(f.Prefix) == 0 {
 		return false
 	}
 	rawMessage, ok := onebotMessage["raw_message"].(string)
 	if !ok {
 		return false
 	}
-	if !strings.HasPrefix(rawMessage, f.Prefix) {
+	//查找匹配的前缀
+	prefix := (func() string {
+		for _, prefix := range f.Prefix {
+			if strings.HasPrefix(rawMessage, prefix) {
+				return prefix
+			}
+		}
+		return ""
+	})()
+	//没有匹配的前缀
+	if prefix == "" {
 		return false
 	}
 	if onebotMessage["message_format"].(string) != "array" {
@@ -188,14 +198,14 @@ func (f *MessageFilter) prefixPass(onebotMessage map[string]interface{}) bool {
 		return false
 	}
 	text := msg0data["text"].(string)
-	if !strings.HasPrefix(text, f.Prefix) {
+	if !strings.HasPrefix(text, prefix) {
 		return false
 	}
-	text = f.PrefixReplace + text[len(f.Prefix):]
+	text = f.PrefixReplace + text[len(prefix):]
 	msg0data["text"] = text
 	if strings.TrimSpace(text) == "" {
 		onebotMessage["message"] = message[1:]
 	}
-	onebotMessage["raw_message"] = f.PrefixReplace + rawMessage[len(f.Prefix):]
+	onebotMessage["raw_message"] = f.PrefixReplace + rawMessage[len(prefix):]
 	return true
 }

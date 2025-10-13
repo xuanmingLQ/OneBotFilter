@@ -75,6 +75,8 @@ func (wss *WsServer) close(ctxCancel context.CancelFunc) {
 	if wss.Conn != nil {
 		wss.Conn.Close()
 	}
+	close(wss.readChan)
+	close(wss.writeChan)
 	wss.Conn = nil
 }
 
