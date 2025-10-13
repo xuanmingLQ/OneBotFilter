@@ -26,17 +26,18 @@ func handleLocal(w http.ResponseWriter, r *http.Request) {
 		log.Println("OneBot客户端连接异常：", err)
 		return
 	}
+	// defer conn.Close()
 	wss.Conn = conn
 	log.Println("已连接到OneBot客户端")
-
-	_ = wss.ReadMessageLoop()
+	err = wss.WsServerHandler()
+	if err != nil {
+		log.Println("OneBot客户端连接异常：", err)
+	}
 	//循环结束
-	wss.Close()
 	log.Println("OneBot客户端连接已断开")
 }
 
 func main() {
-	// config, err := fileter.LoadConfig("config.yaml")
 	err := filter.LoadConfigVP("config.yaml")
 	if err != nil {
 		log.Fatal("加载配置异常:", err)
@@ -44,11 +45,8 @@ func main() {
 
 	http.HandleFunc(filter.CONFIG.Server.Suffix, handleLocal)
 	go func() {
-		for _, wl := range filter.CONFIG.Whitelist {
-			go filter.ConnectWsClient(wss, filter.WhitelistFilter, wl, filter.CONFIG.Server)
-		}
-		for _, bl := range filter.CONFIG.Blacklist {
-			go filter.ConnectWsClient(wss, filter.BlacklistFilter, bl, filter.CONFIG.Server)
+		for _, bacfg := range filter.CONFIG.BotApps {
+			go filter.WsClientHandler(wss, bacfg)
 		}
 	}()
 
