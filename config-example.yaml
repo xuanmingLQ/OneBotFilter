@@ -21,7 +21,7 @@ bot-apps: #bot应用端配置
     group: 
       mode: "blackliist" #黑名单模式，阻止ids中群号的消息
       ids: [ 222222222, 333333333 ]
-    message: #对允许的私聊、群聊或频道的消息进行过滤
+    message: #对允许的私聊或群聊的消息进行过滤
       mode: "blacklist" #只能是whitelist或blacklist，设置为blacklist时，禁止过滤器匹配成功的消息
       filters: ["detail", "b\\d+", "查看 *[\\d.]{2,}", "信息"] #使用正则匹配
       prefix: ["b1","#"] #额外前缀，以这里的前缀开头的无视过滤器，且会自动把前缀去掉

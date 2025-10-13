@@ -3,4 +3,5 @@ config.yaml
 go-build.ps1
 go.sum
 *.zip
+*.7z
 *.exe

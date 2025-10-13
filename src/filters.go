@@ -169,6 +169,9 @@ func (f *MessageFilter) prefixPass(onebotMessage map[string]interface{}) bool {
 	//查找匹配的前缀
 	prefix := (func() string {
 		for _, prefix := range f.Prefix {
+			if prefix == "" {
+				continue
+			}
 			if strings.HasPrefix(rawMessage, prefix) {
 				return prefix
 			}
