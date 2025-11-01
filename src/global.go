@@ -15,6 +15,26 @@ const (
 	BLACKLIST = "blacklist"
 )
 
+// 消息类型
+const (
+	PRIVATE = "pivate"
+	GROUP   = "group"
+)
+
+// 消息格式
+// 消息的内容类型
+const (
+	MESSAGE_FORMAT_ARRAY = "array"
+	MESSAGE_TYPE_TEXT    = "text"
+)
+
+// 布尔值
+var (
+	TRUE  = true
+	FALSE = false
+)
+
+// 配置文件相关
 var (
 	VP          *viper.Viper
 	CONFIG      Config

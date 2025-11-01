@@ -132,7 +132,7 @@ func (bac *BotAppsConfig) Check() error {
 	}
 
 	switch bac.Message.Mode {
-	case "", WHITELIST, BLACKLIST:
+	case "", ON, WHITELIST, BLACKLIST:
 		//ok
 	default:
 		return fmt.Errorf("%s.message.mode配置错误，只能是whitelist or blacklist", bac.Name)

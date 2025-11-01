@@ -2,7 +2,6 @@ package onebotfilter
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -41,7 +40,13 @@ func WsClientHandler(wss *WsServer, cfg BotAppsConfig) {
 	//client
 	for { //循环重连，转发消息
 		log.Printf("正在连接：%s\n", cfg.Name)
-		conn, _, err := websocket.DefaultDialer.Dial(cfg.Uri, header)
+		dialer := &websocket.Dialer{
+			Proxy:            http.ProxyFromEnvironment,
+			HandshakeTimeout: 45 * time.Second,
+			ReadBufferSize:   1 << 30,
+			WriteBufferSize:  1 << 30,
+		}
+		conn, _, err := dialer.Dial(cfg.Uri, header)
 		if err != nil {
 			log.Printf("连接%s异常: %v\n", cfg.Name, err)
 			time.Sleep(time.Duration(CONFIG.Server.SleepTime) * time.Second)
@@ -117,24 +122,30 @@ func (wc *WsClient) writeLoop(ctx context.Context) {
 	for {
 		select {
 		case msg := <-wc.writeChan:
-			//解析json格式的消息
-			onebotMessage := make(map[string]interface{})
-			err := json.Unmarshal(msg.MsgData, &onebotMessage)
-			if err != nil {
-				log.Printf("解析OneBot消息出错：%v\n", err)
-				continue
-			}
-			//通常的消息
-			if rawMessage, ok := onebotMessage["raw_message"].(string); ok {
-				if wc.filter.Filter(rawMessage, onebotMessage) {
-					//过滤器通过，发送
-					wc.conn.WriteJSON(onebotMessage)
+			if msg.MsgType == websocket.TextMessage {
+
+				// 解析onebot的消息
+				onebotMessage := ParseOneBotMessage(msg.MsgData)
+				if onebotMessage == nil {
+					//解析出错的消息也直接放行
+					if err := wc.conn.WriteMessage(msg.MsgType, msg.MsgData); err != nil {
+						log.Printf("向%s发送消息出错：%v\n", wc.Name, err)
+					}
+					continue
 				}
-				continue
+				// 通常的消息
+				if onebotMessage.Partial.RawMessage != "" {
+					if wc.filter.Filter(onebotMessage) {
+						//过滤器通过，发送
+						if err := wc.conn.WriteJSON(onebotMessage.Intact); err != nil {
+							log.Printf("向%s发送消息出错：%v\n", wc.Name, err)
+						}
+					}
+					continue
+				}
 			}
 			//其他消息直接放行
-			err = wc.conn.WriteMessage(msg.MsgType, msg.MsgData)
-			if err != nil {
+			if err := wc.conn.WriteMessage(msg.MsgType, msg.MsgData); err != nil {
 				log.Printf("向%s发送消息出错：%v\n", wc.Name, err)
 			}
 		case <-ctx.Done():
