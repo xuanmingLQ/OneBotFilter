@@ -1,40 +1,53 @@
 server:
-  host: "127.0.0.1" #本程序主机地址，一般不用改
-  port: 3939  #本程序的ws端口
-  suffix: "/ws" #ws的路径，如果没有修改过的话就是ws://127.0.0.1:3939/ws
-  bot-id: 00000000 #bot的账号，给下面的bot应用看的
-  user-agent: "OneBotFilter" #用户代理，只是一个标记，给下面的bot应用看的
-  default: #默认的private和group配置，当下面的bot应用的对应项目配置为defualt时，使用此配置
-    private: #私聊
-      mode: "off" #mode只能设置为：on、off、whitelist或blacklist，设置为off禁止所有私聊或群聊，设置为on允许所有私聊或群聊
-      ids: [] #当mode设置为on或off时，忽略此项
-    group: #群聊
-      mode: "whitelist" #mode只能设置为：on、off、whitelist或blacklist，设置为whitelist或blacklist的，根据黑白名单阻止或允许消息
-      ids: [ 1111111111, 66666666 ] #当mode设置为whitelist或blackliist时，此项才有意义
-  sleep-time: 5 #当连接bot应用端失败时，等待多久之后重新连接
-  debug: false  #debug模式，一般为false，当你需要显示所有从onebot客户端发来的消息时，给它改为true
-bot-apps: #bot应用端配置
+  host: "127.0.0.1"  #本程序主机地址，一般不用改
+  port: 3939         #本程序的ws端口
+  suffix: "/ws"      #ws的路径，如果没有修改过的话就是ws://127.0.0.1:3939/ws
+  bot-id: 00000000   #bot的账号，给下面的bot应用看的
+  user-agent: "OneBotFilter"  #用户代理，只是一个标记，给下面的bot应用看的
+
+  default:    #默认的private和group配置，当下面的bot应用的对应项目配置为defualt时，使用此配置
+    private:  #私聊
+      mode: "off"  #mode只能设置为：on、off、whitelist或blacklist，设置为off禁止所有私聊或群聊，设置为on允许所有私聊或群聊
+      ids: [ ]     #当mode设置为on或off时，忽略此项
+    group:  #群聊
+      mode: "whitelist"  #mode只能设置为：on、off、whitelist或blacklist，设置为whitelist或blacklist的，根据黑白名单阻止或允许消息
+      ids: [ 1111111111, 66666666 ]  #当mode设置为whitelist或blackliist时，此项才有意义
+
+  sleep-time: 5  #当连接bot应用端失败时，等待多久之后重新连接
+  debug: false   #debug模式，一般为false，当你需要显示所有从onebot客户端发来的消息时，给它改为true
+
+bot-apps:  #bot应用端配置
+  # CASE 1：简洁配置示例（旧版本配置，filter 仅对 group 生效）
   - name: "bot1"  #bot应用的名字，不要写一样的
     uri: "ws://example.com/onebot/v11/ws" #bot应用的反向ws地址
-    access-token: #令牌，没有留空
+    # access-token: #留空的项目可以直接不写
     # private: #不填写的项目默认为default，使用上面的deault配置，此处private被注释掉，使用上面default中的off配置
-    group: 
+    group:
       mode: "blackliist" #黑名单模式，阻止ids中群号的消息
       ids: [ 222222222, 333333333 ]
     message: #对允许的私聊或群聊的消息进行过滤
       mode: "blacklist" #只能是whitelist或blacklist，设置为blacklist时，禁止过滤器匹配成功的消息
-      filters: ["detail", "b\\d+", "查看 *[\\d.]{2,}", "信息"] #使用正则匹配
+      filters: [ "detail", "b\\d+", "查看 *[\\d.]{2,}", "信息" ] #使用正则匹配
       prefix: [ "b1", "#" ] #额外前缀，以这里的前缀开头的无视过滤器，且会自动把前缀去掉
       prefix-replace: "/" #当此项不为空时，使用前缀通过的消息会将前缀改为这个，此处会把前缀为"b1"或"#"的消息改为以"/"为前缀
+
+  # CASE 2：完整配置示例（新版本配置，允许首先区分 private、group 再单分别独配置 ids 与 message 的 filter）
   - name: "bot2"  #bot应用的名字，不要写一样的
-    uri: "wss://bot2.example.com/onebot/v11/ws" #bot应用的反向ws地址
+    uri: "wss://bot2.example.com/onebot/v11/ws"  #bot应用的反向ws地址
     # access-token: #留空的项目可以直接不写
     private:
-      mode: "blacklist" #黑名单模式，阻止ids中的QQ号的私聊
-      ids: [ 2233445566 ]
-    # group: #不填写的项目默认为default，使用上面的deault配置，此处group被注释掉，使用上面default中的whitelist配置
-    message:
-      mode: "whitelist" #只能是whitelist或blacklist，设置为whitelist时，只允许匹配成功的消息
-      filters: [ "help", "(?<=pj)sk", "pj(?=sk)" ] #使用正则匹配
-      prefix: [] #没有前缀，没有可以无视过滤器通过的方式
-      prefix-replace: #留空将会直接把那个前缀去掉
+      ids:
+        mode: "whitelist"
+        filters: [ 2233445566 ]
+      message:
+        mode: "whitelist"
+        filters: [ "/", "pjsk" ]
+        prefix: [ "/help" ]
+        prefix-replace:
+    group:
+      ids:
+        mode: "blacklist"
+        filters: [ 2233445566 ]
+      message:
+        mode: "whitelist"
+        filters: [ "/help", "pjsk" ]

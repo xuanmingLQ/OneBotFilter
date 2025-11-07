@@ -17,7 +17,7 @@ const (
 
 // 消息类型
 const (
-	PRIVATE = "pivate"
+	PRIVATE = "private"
 	GROUP   = "group"
 )
 
