@@ -5,3 +5,4 @@ go-build.ps1
 *.7z
 *.exe
 rm_file/
+.idea/
