@@ -24,8 +24,9 @@ const (
 // 消息格式
 // 消息的内容类型
 const (
-	MESSAGE_FORMAT_ARRAY = "array"
-	MESSAGE_TYPE_TEXT    = "text"
+	MESSAGE_FORMAT_ARRAY  = "array"
+	MESSAGE_FORMAT_STRING = "string"
+	MESSAGE_TYPE_TEXT     = "text"
 )
 
 // 布尔值
@@ -69,6 +70,7 @@ func ReLoadFilters() error {
 		//检查配置
 		err := botApp.Check()
 		if err != nil {
+			log.Printf("bot %s 的配置文件校验失败：%v\n", botApp.Name, err)
 			continue
 		}
 		for _, filter := range ALL_FILTERS {

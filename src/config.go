@@ -81,8 +81,14 @@ type ServerConfig struct {
 	BotId     string `mapstructure:"bot-id" yaml:"bot-id"`
 	UserAgent string `mapstructure:"user-agent" yaml:"user-agent"`
 	Default   struct {
-		Private MessageTypeConfig `mapstructure:"private" yaml:"private"`
-		Group   MessageTypeConfig `mapstructure:"group" yaml:"group"`
+		Private struct {
+			Mode string  `mapstructure:"mode" yaml:"mode"` // on、 off、 whitelist or blacklist
+			Ids  []int64 `mapstructure:"ids" yaml:"ids"`
+		} `mapstructure:"private" yaml:"private"`
+		Group struct {
+			Mode string  `mapstructure:"mode" yaml:"mode"` // on、 off、 whitelist or blacklist
+			Ids  []int64 `mapstructure:"ids" yaml:"ids"`
+		} `mapstructure:"group" yaml:"group"`
 	} `mapstructure:"default" yaml:"default"`
 	SleepTime float32 `mapstructure:"sleep-time" yaml:"sleep-time"` //重新连接的间隔，单位秒
 	Debug     bool    `mapstructure:"debug" yaml:"debug"`
@@ -95,16 +101,16 @@ type BotAppsConfig struct {
 	Group       MessageTypeConfig `mapstructure:"group" yaml:"group"`
 	// 保留顶层 message 以向后兼容历史版本的配置
 	//若 private/group 未单独配置 message，则使用此项
-	Message MessageConfig `mapstructure:"message" yaml:"message"`
+	Message MessageContentConfig `mapstructure:"message" yaml:"message"`
 }
 
 type MessageTypeConfig struct {
-	Mode    string        `mapstructure:"mode" yaml:"mode"` // on、 off、 whitelist or blacklist
-	Ids     []int64       `mapstructure:"ids" yaml:"ids"`
-	Message MessageConfig `mapstructure:"message" yaml:"message"` // 在 private/group 下允许单独配置 message
+	Mode    string               `mapstructure:"mode" yaml:"mode"` // default、on、 off、 whitelist or blacklist
+	Ids     []int64              `mapstructure:"ids" yaml:"ids"`
+	Message MessageContentConfig `mapstructure:"message" yaml:"message"` // 在 private/group 下允许单独配置 message
 }
-type MessageConfig struct {
-	Mode          string   `mapstructure:"mode" yaml:"mode"` // whitelist or blacklist
+type MessageContentConfig struct {
+	Mode          string   `mapstructure:"mode" yaml:"mode"` // on、whitelist or blacklist
 	Filters       []string `mapstructure:"filters" yaml:"filters"`
 	Prefix        []string `mapstructure:"prefix" yaml:"prefix"`
 	PrefixReplace string   `mapstructure:"prefix-replace" yaml:"prefix-replace"`
@@ -118,49 +124,55 @@ func (bac *BotAppsConfig) Check() error {
 		return fmt.Errorf("%s.uri不能为空", bac.Name)
 	}
 
-	// 若未配置 private.mode，则仅继承默认的 Mode，而非整个结构体
-	// 仅在 mode 为空或为 DEFAULT 时设置 Mode（保留 ids 与 message 避免配置被覆盖）
+	// 若未配置 private.mode，则仅继承默认的 Mode和ids
+	// 仅在 mode 为空或为 DEFAULT 时设置 Mode和ids，避免message配置被覆盖
 	switch bac.Private.Mode {
 	case "", DEFAULT:
-		// 只继承 mode 字段，不覆盖 ids/message（保留用户在 ids 或 message 中的配置）
+		// 只继承 mode 和 ids 字段，不覆盖 message
 		bac.Private.Mode = CONFIG.Server.Default.Private.Mode
+		bac.Private.Ids = CONFIG.Server.Default.Private.Ids
 	case ON, OFF, WHITELIST, BLACKLIST:
 		//ok
 	default:
 		return fmt.Errorf("%s.private.mode配置错误，只能是on、 off、 whitelist or blacklist", bac.Name)
 	}
 
-	// 同理地处理 group 的 mode（保留 group.ids 和 group.message 避免配置被覆盖）
+	// 同理地处理 group 的 mode 和 group.ids ，不覆盖 group.message
 	switch bac.Group.Mode {
 	case "", DEFAULT:
 		bac.Group.Mode = CONFIG.Server.Default.Group.Mode
+		bac.Group.Ids = CONFIG.Server.Default.Group.Ids
 	case ON, OFF, WHITELIST, BLACKLIST:
-		//ok
+		//ok 单独设置
 	default:
 		return fmt.Errorf("%s.group.mode配置错误，只能是on、 off、 whitelist or blacklist", bac.Name)
 	}
 
-	// 验证 message.mode（顶层 message）与 private/group 下的 message（如果存在的话）
-	// 顶层 message
+	// 验证 message.（默认 message）与 private/group 下的 message（如果存在的话）
+	// 默认 message
 	switch bac.Message.Mode {
 	case "", ON, WHITELIST, BLACKLIST:
 		//ok
 	default:
-		return fmt.Errorf("%s.message.mode配置错误，只能是whitelist or blacklist", bac.Name)
+		return fmt.Errorf("%s.message.mode配置错误，只能是 on、whitelist 或 blacklist", bac.Name)
 	}
 	// private.message (如果被设置，验证 mode)
 	switch bac.Private.Message.Mode {
-	case "", ON, WHITELIST, BLACKLIST:
-		// ok（为空，未设置或继承）
+	case "", DEFAULT:
+		bac.Private.Message = bac.Message
+	case ON, WHITELIST, BLACKLIST:
+		// ok 单独设置
 	default:
-		return fmt.Errorf("%s.private.message.mode配置错误，只能是whitelist or blacklist", bac.Name)
+		return fmt.Errorf("%s.private.message.mode配置错误，只能是 default、on、whitelist 或 blacklist", bac.Name)
 	}
 	// group.message (如果被设置，验证 mode)
 	switch bac.Group.Message.Mode {
-	case "", ON, WHITELIST, BLACKLIST:
-		// ok（为空，未设置或继承）
+	case "", DEFAULT:
+		bac.Group.Message = bac.Message
+	case ON, WHITELIST, BLACKLIST:
+		// ok 单独设置
 	default:
-		return fmt.Errorf("%s.group.message.mode配置错误，只能是whitelist or blacklist", bac.Name)
+		return fmt.Errorf("%s.group.message.mode配置错误，只能是 default、on、whitelist 或 blacklist", bac.Name)
 	}
 	return nil
 }
