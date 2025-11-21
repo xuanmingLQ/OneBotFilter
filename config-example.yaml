@@ -13,6 +13,7 @@ server:
       mode: "whitelist"  #mode只能设置为：on、off、whitelist或blacklist，设置为whitelist或blacklist的，根据黑白名单阻止或允许消息
       ids: [ 1111111111, 66666666 ]  #当mode设置为whitelist或blackliist时，此项才有意义
 
+  buffer-size: 4096 # 缓冲区大小
   sleep-time: 5  #当连接bot应用端失败时，等待多久之后重新连接
   debug: false   #debug模式，一般为false，当你需要显示所有从onebot客户端发来的消息时，给它改为true
 
@@ -36,18 +37,16 @@ bot-apps:  #bot应用端配置
     uri: "wss://bot2.example.com/onebot/v11/ws"  #bot应用的反向ws地址
     # access-token: #留空的项目可以直接不写
     private:
-      ids:
-        mode: "whitelist"
-        filters: [ 2233445566 ]
+      mode: "whitelist"
+      ids: [ 2233445566 ]
       message: #可以对私聊和群聊单独设置message过滤器
         mode: "whitelist"
         filters: [ "/", "pjsk" ]
         prefix: [ "b2" ]
         prefix-replace:
     group:
-      ids:
-        mode: "blacklist"
-        filters: [ 2233445566 ]
+      mode: "blacklist"
+      ids: [ 2233445566 ]
       message: #可以对私聊和群聊单独设置message过滤器
         mode: "whitelist"
         filters: [ "/help", "pjsk" ]

@@ -90,8 +90,9 @@ type ServerConfig struct {
 			Ids  []int64 `mapstructure:"ids" yaml:"ids"`
 		} `mapstructure:"group" yaml:"group"`
 	} `mapstructure:"default" yaml:"default"`
-	SleepTime float32 `mapstructure:"sleep-time" yaml:"sleep-time"` //重新连接的间隔，单位秒
-	Debug     bool    `mapstructure:"debug" yaml:"debug"`
+	BufferSize int     `mapstructure:"buffer-size" yaml:"buffer-size"`
+	SleepTime  float32 `mapstructure:"sleep-time" yaml:"sleep-time"` //重新连接的间隔，单位秒
+	Debug      bool    `mapstructure:"debug" yaml:"debug"`
 }
 type BotAppsConfig struct {
 	Name        string            `mapstructure:"name" yaml:"name"`

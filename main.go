@@ -42,7 +42,8 @@ func main() {
 	if err != nil {
 		log.Fatal("加载配置异常:", err)
 	}
-
+	upgrader.ReadBufferSize = filter.CONFIG.Server.BufferSize
+	upgrader.WriteBufferSize = filter.CONFIG.Server.BufferSize
 	http.HandleFunc(filter.CONFIG.Server.Suffix, handleLocal)
 	go func() {
 		for _, bacfg := range filter.CONFIG.BotApps {

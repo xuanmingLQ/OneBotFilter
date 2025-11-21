@@ -41,7 +41,12 @@ func WsClientHandler(wss *WsServer, cfg BotAppsConfig) {
 	for { //循环重连，转发消息
 		log.Printf("正在连接：%s\n", cfg.Name)
 
-		dialer := websocket.DefaultDialer
+		dialer := &websocket.Dialer{
+			Proxy:            http.ProxyFromEnvironment,
+			HandshakeTimeout: 45 * time.Second,
+			ReadBufferSize:   CONFIG.Server.BufferSize,
+			WriteBufferSize:  CONFIG.Server.BufferSize,
+		}
 		conn, _, err := dialer.Dial(cfg.Uri, header)
 		if err != nil {
 			log.Printf("连接%s异常: %v\n", cfg.Name, err)
