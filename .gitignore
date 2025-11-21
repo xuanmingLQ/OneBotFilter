@@ -1,6 +1,6 @@
 build/
 config.yaml
-go-build.ps1
+go-build.*
 *.zip
 *.7z
 *.exe
