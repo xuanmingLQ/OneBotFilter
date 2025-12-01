@@ -24,7 +24,7 @@ bot-apps:  #bot应用端配置
     # access-token: #留空的项目可以直接不写
     # private: #不填写的项目默认为default，使用上面的deault配置，此处private被注释掉，使用上面default中的off配置
     group:
-      mode: "blackliist" #黑名单模式，阻止ids中群号的消息
+      mode: "blacklist" #黑名单模式，阻止ids中群号的消息
       ids: [ 222222222, 333333333 ]
     message: #对允许的私聊或群聊的消息进行过滤
       mode: "blacklist" #只能是whitelist或blacklist，设置为blacklist时，禁止过滤器匹配成功的消息
