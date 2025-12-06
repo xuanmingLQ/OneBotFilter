@@ -51,7 +51,7 @@ func main() {
 		}
 	}()
 
-	log.Printf("OneBotFilter已启动 ws://%s:%d/%s\n", filter.CONFIG.Server.Host, filter.CONFIG.Server.Port, filter.CONFIG.Server.Suffix)
+	log.Printf("OneBotFilter已启动 ws://%s:%d%s\n", filter.CONFIG.Server.Host, filter.CONFIG.Server.Port, filter.CONFIG.Server.Suffix)
 	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", filter.CONFIG.Server.Host, filter.CONFIG.Server.Port), nil); err != nil {
 		log.Fatal("监听服务出错:", err)
 	}

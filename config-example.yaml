@@ -6,13 +6,13 @@ server:
   user-agent: "OneBotFilter"  #用户代理，只是一个标记，给下面的bot应用看的
 
   default:    #默认的private和group配置，当下面的bot应用的对应项目配置为defualt时，使用此配置
-    private:  #私聊
-      mode: "off"  #mode只能设置为：on、off、whitelist或blacklist，设置为off禁止所有私聊或群聊，设置为on允许所有私聊或群聊
-      ids: [ ]     #当mode设置为on或off时，忽略此项
-    group:  #群聊
-      mode: "whitelist"  #mode只能设置为：on、off、whitelist或blacklist，设置为whitelist或blacklist的，根据黑白名单阻止或允许消息
-      ids: [ 1111111111, 66666666 ]  #当mode设置为whitelist或blackliist时，此项才有意义
-
+    # 账号黑白名单
+    user-id: # 对用户（QQ）设置，不论是私聊还是群聊都有效
+      mode: "blacklist" # 只能为blacklist或whitelist
+      ids: [ ] # 如果为blacklist，不会接受其中的qq账号的消息，如果为whitelist，只接受其中的qq账号的消息
+    group-id: # 对群组（群号）设置
+      mode: "whitelist" # 只能为blacklist或whitelist
+      ids: [ ] # 如果为blacklist，不会接受其中的群号的消息，如果为whitelist，只接受其中的群号的消息
   buffer-size: 4096 # 缓冲区大小
   sleep-time: 5  #当连接bot应用端失败时，等待多久之后重新连接
   debug: false   #debug模式，一般为false，当你需要显示所有从onebot客户端发来的消息时，给它改为true
@@ -21,13 +21,17 @@ bot-apps:  #bot应用端配置
   # CASE 1：简洁配置示例（旧版本配置，filter 仅对 group 生效）
   - name: "bot1"  #bot应用的名字，不要写一样的
     uri: "ws://example.com/onebot/v11/ws" #bot应用的反向ws地址
-    # access-token: #留空的项目可以直接不写
-    # private: #不填写的项目默认为default，使用上面的deault配置，此处private被注释掉，使用上面default中的off配置
-    group:
-      mode: "blacklist" #黑名单模式，阻止ids中群号的消息
+    access-token: "abcd"
+    # 账号黑白名单
+    user-id: # blacklist，不会接收ids中的qq号的消息，不论群聊还是私聊
+      mode: "blacklist" #黑名单模式，阻止ids中qq号的消息
       ids: [ 222222222, 333333333 ]
-    message: #对允许的私聊或群聊的消息进行过滤
-      mode: "blacklist" #只能是whitelist或blacklist，设置为blacklist时，禁止过滤器匹配成功的消息
+    group-id: # whitelist，只会接收ids中的群号消息
+      mode: "whitelist" # 白名单模式，只接收ids中的群号的消息
+      ids: [ 12345678 ]
+    # 消息内容过滤器，这个过滤器对群聊私聊都有效
+    message: #对接收的私聊或群聊消息进行过滤
+      mode: "blacklist" #只能是on、off、whitelist或blacklist，设置为blacklist时，禁止过滤器匹配成功的消息
       filters: [ "detail", "b\\d+", "查看 *[\\d.]{2,}", "信息" ] #使用正则匹配
       prefix: [ "b1", "#" ] #额外前缀，以这里的前缀开头的无视过滤器，且会自动把前缀去掉
       prefix-replace: "/" #当此项不为空时，使用前缀通过的消息会将前缀改为这个，此处会把前缀为"b1"或"#"的消息改为以"/"为前缀
@@ -36,17 +40,18 @@ bot-apps:  #bot应用端配置
   - name: "bot2"  #bot应用的名字，不要写一样的
     uri: "wss://bot2.example.com/onebot/v11/ws"  #bot应用的反向ws地址
     # access-token: #留空的项目可以直接不写
-    private:
-      mode: "whitelist"
-      ids: [ 2233445566 ]
-      message: #可以对私聊和群聊单独设置message过滤器
-        mode: "whitelist"
-        filters: [ "/", "pjsk" ]
-        prefix: [ "b2" ]
-        prefix-replace:
-    group:
-      mode: "blacklist"
-      ids: [ 2233445566 ]
-      message: #可以对私聊和群聊单独设置message过滤器
-        mode: "whitelist"
-        filters: [ "/help", "pjsk" ]
+    # 账号黑白名单
+    # user-id: # 不填写，使用default配置
+    group-id:
+      mode: "default" # 使用default配置
+      ids: [] # 由于使用default配置，此处的ids会被忽略。（建议删掉这里的ids）
+    private-message: # 单独设置的私聊过滤器，会覆盖message过滤器
+      mode: "whitelist" #只能是on、off、whitelist或blacklist，设置为whitelist时，只允许过滤器匹配成功的消息
+      filters: [ "/", "pjsk" ]
+      prefix: [ "b2" ] # 使用b2前缀强行通过消息过滤器
+      prefix-replace: # 此项为空，使用前缀通过的消息直接把前缀去掉
+    group-message: # 单独设置的群聊过滤器，会覆盖message过滤器
+      mode: "on"  # 只能是on、off、whitelist或blacklist，设置为on时，所有的消息都能通过
+      # filters: # 设置为on或off时，无视filters
+      # 自然也无视prefix和prefix-replace
+    # message: 已经为群聊和私聊单独设置了消息过滤器，这个将被忽略

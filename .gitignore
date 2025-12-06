@@ -6,3 +6,5 @@ go-build.*
 *.exe
 rm_file/
 .idea/
+.vscode/
+debug*
